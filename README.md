@@ -1,14 +1,6 @@
 <div align="center">
     <img width="150" height="auto" src="https://www.jianfv.top/image/logo.png" />
     <h4>纯js封装的聊天框，兼容各大框架适用，适配pc与h5的交互</h4>
-    <p align="center">
-        <a href="https://www.npmjs.com/package/chatarea">
-        <img src="https://img.shields.io/badge/npm-v5.6.3blue" alt="version" />
-        </a>
-        <a href="https://www.npmjs.com/package/chatarea">
-        <img src="https://img.shields.io/badge/License-MIT-yellow" />
-        </a>
-    </p>
 </div>
 
 
