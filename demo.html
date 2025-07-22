@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0" />
+    <title>deBug</title>
+    <link rel="stylesheet" href="./es5/ChatArea.css">
+    <script src="./lib/ChatArea.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        #app {
+            padding: 20px;
+        }
+
+        #msg1 {
+            padding: 10px;
+            word-break: break-all;
+            white-space: pre-wrap;
+        }
+
+        #msg1 .at-user {
+            margin: 0 1px;
+            color: #269AFF;
+        }
+        #msg1 .at-tag {
+            margin: 0 1px;
+            color: #269AFF;
+        }
+
+
+        .info {
+        	margin-top: 10px;
+        	color: #666;
+        	font-weight: bold;
+        }
+
+        .set-laugh {
+            width: 22px;
+            height: 22px;
+            vertical-align: bottom;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <p class="info">扩展交互</p>
+        <div class="btn-group"></div>
+
+        <p class="info">请尝试在输入框中敲击@键或者#键吧，本文只提供简单示例，详情使用请 <a href="https://www.jianfv.top/ChatAreaDoc">访问文档</a></p>
+        <div id="chat"></div>
+
+        <p class="info">消息回显-发送后查看展示效果</p>
+        <div id="msg1"></div>
+
+        <p class="info" style="margin-top: 40px">异步加载模式</p>
+        <div id="asyncChat"></div>
+    </div>
+
+    <script>
+        const initChat = function () {
+            const chat = new window.ChatArea({
+                elm: document.getElementById('chat'),
+                placeholder: '输入@唤起选择窗，ctrl+enter换行，enter发送，v5.6.3',
+                userList: [
+                    {
+                        id: '5',
+                        name: '张三丰',
+                        avatar: './example/user01.png',
+                        pinyin: 'zhang san feng'
+                    },
+                    {
+                        id: '1',
+                        name: '张三',
+                        pinyin: 'zhang san'
+                    },
+                    {
+                        id: '2',
+                        name: '李四',
+                        pinyin: 'li si'
+                    },
+                    {
+                        id: '3',
+                        name: '王五',
+                        pinyin: 'wang wu'
+                    },
+                    {
+                        id: '4',
+                        name: '马六',
+                        pinyin: 'ma liu'
+                    }
+                ],
+                customTrigger: [ // 自定义弹窗触发符
+                    {
+                        dialogTitle: '群话题',
+                        prefix: '#',
+                        tagList: [
+                            { id: 'ht1', name: '话题一', pinyin: 'hua ti yi' },
+                            { id: 'ht2', name: '话题二', pinyin: 'hua ti er' }
+                        ]
+                    }
+                ],
+                selectList: [
+                    {
+                        dialogTitle: '风格选择',
+                        key: 'style',
+                        options: [
+                            {
+                                id: "1",
+                                name: "人像摄影",
+                                preview: "https://www.jianfv.top/style/style1.webp"
+                            },
+                            {
+                                id: "2",
+                                name: "电影写真",
+                                preview: "https://www.jianfv.top/style/style2.webp"
+                            },
+                            {
+                                id: "3",
+                                name: "中国风",
+                                preview: "https://www.jianfv.top/style/style3.webp"
+                            }
+                        ]
+                    }
+                ],
+                autoFocus: false
+                // 更多配置请参考文档
+            })
+            console.log(chat, 'chat示例对象')
+
+            chat.addEventListener('enterSend', function () {
+                const isEmpty = chat.isEmpty(true)
+                if (isEmpty) return
+                document.getElementById('msg1').innerHTML = chat.getHtml({
+                    saveTagData: true,
+                    identifyLink: true
+                })
+            })
+            chat.addEventListener('atCheck', function (users) {
+                console.log(users, '本次选中的用户')
+            })
+            chat.addEventListener('tagCheck', function (tag, type) {
+                console.log(tag, '本次选中的自定义标签')
+                console.log(type, '本次选中的自定义标签的类别')
+            })
+            chat.addEventListener('selectCheck', function (tag, type) {
+                console.log(tag, '本次选中的下拉选择标签')
+                console.log(type, '本次选中的下拉选择的类别')
+            })
+
+            const options = [
+                {
+                    label: '打开前置标签',
+                    click () {
+                        chat.openTipTag({
+                            tagLabel: 'tag',
+                            popoverLabel: 'popover',
+                            codeLabel: 'code'
+                        })
+                    }
+                },
+                {
+                    label: '关闭前置标签',
+                    click () {
+                        chat.closeTipTag()
+                    }
+                },
+                {
+                    label: '插入表情',
+                    click () {
+                        chat.insertHtml('<img class="set-laugh" src="./example/bq01.gif" data-img-text="坏笑" alt="">')
+                    }
+                },
+                {
+                    label: '插入@用户标签',
+                    click () {
+                        chat.setUserTag({ id: '5', name: '张三丰' })
+                    }
+                },
+                {
+                  label: '移除@用户标签',
+                  click () {
+                      chat.delUserTags()
+                  }
+                },
+                {
+                    label: '插入#话题标签',
+                    click () {
+                        chat.setCustomTag({ id: 'ht1', name: '话题一' }, '#')
+                    }
+                },
+                {
+                  label: '移除#话题标签',
+                  click () {
+                      chat.delCustomTags('#')
+                  }
+                },
+                {
+                    label: '插入下拉选择标签',
+                    click () {
+                        chat.setSelectTag({ id: '1', name: '人像摄影' }, 'style')
+                    }
+                },
+                {
+                    label: '移除下拉选择标签',
+                    click () {
+                        chat.delSelectTags('style')
+                    }
+                },
+                {
+                    label: '插入输入标签',
+                    click: () => {
+                        chat.setInputTag(
+                            'jop',
+                            '请输入你的职业'
+                        )
+                    }
+                },
+                {
+                    label: '移除输入标签',
+                    click: () => {
+                        chat.delInputTags(['jop'])
+                    }
+                },
+                {
+                    label: '撤销操作',
+                    click () {
+                        chat.undo()
+                    }
+                },
+                {
+                    label: '恢复操作',
+                    click () {
+                        chat.redo()
+                    },
+                },
+                {
+                    label: '控制台打印聊天框中所有标签',
+                    click () {
+                        const userTags = chat.getCallUserList()
+                        console.log(userTags, '@人员标签')
+
+                        const customTags = chat.getCustomTagList()
+                        console.log(customTags, '自定义触发符标签')
+
+                        const selectTags = chat.getSelectTagList()
+                        console.log(selectTags, '下拉选择标签')
+                    }
+                },
+                {
+                    label: '获取聊天框TEXT和HTML',
+                    click () {
+                        const text = chat.getText({
+                            imgToText: true
+                        })
+                        console.log(text, 'text')
+
+                        const html = chat.getHtml()
+                        console.log(html, 'html')
+                    }
+                },
+                {
+                    label: '唤起光标选择弹窗',
+                    click () {
+                        chat.showPCPointDialog()
+                    }
+                },
+                {
+                    label: '唤起人员多选选择弹窗',
+                    click () {
+                        chat.showPCCheckDialog()
+                    }
+                },
+                {
+                    label: '唤起自定义触发符选择弹窗',
+                    click () {
+                        chat.showPCCustomTagDialog('#')
+                    }
+                },
+                {
+                    label: '唤起下拉选择弹窗',
+                    click () {
+                        chat.showPCSelectDialog('style', document.querySelector('#btn13'))
+                    }
+                },
+                {
+                    label: '销毁示例',
+                    click () {
+                        chat.dispose()
+                    }
+                }
+            ]
+
+            const frag = document.createDocumentFragment()
+            options.forEach((option, index) => {
+                const btn = document.createElement('button')
+                btn.setAttribute('id', `btn${index + 1}`)
+                btn.textContent = option.label
+                btn.onclick = option.click
+                btn.style.margin = '4px'
+                frag.appendChild(btn)
+            })
+            document.querySelector('.btn-group').appendChild(frag)
+        }
+
+        const initAsyncChat = function () {
+            const asyncChat = new window.ChatArea({
+                elm: document.getElementById('asyncChat'),
+                placeholder: '本示例接口查询的是github上的用户列表，请随意在@字符后输入点什么吧',
+                asyncMatch: true,
+                // 转接github的用户列表
+                userProps: {
+                    name: 'login',
+                    avatar: 'avatar_url'
+                },
+                autoFocus: false
+            })
+
+            // 接管匹配
+            asyncChat.addEventListener('atMatch', async (str) => {
+                // 关闭空字符请求
+                if (!str) return []
+                const res = await fetch('https://api.github.com/search/users?q=' + str).then(res => res.json())
+                // 返回需要渲染的人员列表
+                return res?.items ?? []
+            })
+        }
+
+        initAsyncChat()
+        initChat()
+    </script>
+</body>
+</html>
